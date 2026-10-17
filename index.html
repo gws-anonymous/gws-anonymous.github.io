@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GWS: Generalizable World Simulator - Real-Time &amp; Long-Horizon Interaction with Diverse Objects</title>
+<meta name="description" content="Generalizable World Simulator (GWS): a real-time, long-horizon action-conditioned world model for bimanual robot manipulation, trained from scratch on robot-native teleoperation data. Anonymous project page, under double-blind review (ICLR 2027).">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Generalizable World Simulator: Real-Time &amp; Long-Horizon Interaction with Diverse Objects">
+<meta property="og:description" content="A world model whose dynamics are trained from scratch on a large robot-native teleoperation dataset: 10 Hz live teleoperation, 5+ minute autoregressive rollouts, and transfer to unseen tasks.">
+<meta property="og:image" content="https://gws-anonymous.github.io/assets/fig/og_teaser.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.className += ' js';</script>
+</head>
+<body>
+<a class="skip" href="#method">Skip to content</a>
+
+<nav class="nav" aria-label="Page sections">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top"><span class="mark">GWS</span><span class="brand-long"> &middot; Generalizable World Simulator</span></a>
+    <ul>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#comparison">Comparison</a></li>
+    </ul>
+    <button class="rail-toggle" type="button" aria-pressed="false" hidden title="Pause or resume the side column of rollout clips">
+      <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
+      <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      <span class="rail-toggle-text">Pause side clips</span>
+    </button>
+  </div>
+  <div class="progress" aria-hidden="true"><span></span></div>
+</nav>
+
+
+<main id="top">
+<header class="hero">
+  <p class="eyebrow tag tag--paper"><span class="dot"></span>ICLR 2027 submission &middot; under double&#8209;blind review</p>
+  <h1>Generalizable World Simulator</h1>
+  <p class="tagline">Real-time, long-horizon interaction with diverse objects</p>
+  <p class="byline">Anonymous authors</p>
+
+  <div class="buttons">
+    <span class="btn soon" title="The paper PDF will be linked after the review period">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v14H6zM13 3.5V9h5.5zM8 13h8v1.5H8zm0 3h8v1.5H8zm0-6h3v1.5H8z"/></svg>
+      Paper <small class="tag tag--paper">soon</small>
+    </span>
+    <span class="btn soon" title="Code and model weights will be released after the review period">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.4 16.6 4.8 12l4.6-4.6L8 6l-6 6 6 6zm5.2 0 4.6-4.6-4.6-4.6L16 6l6 6-6 6z"/></svg>
+      Code <small class="tag tag--paper">soon</small>
+    </span>
+    <a class="btn primary" href="#demo">
+      <span class="dot" aria-hidden="true"></span>
+      Try the live demo
+    </a>
+    <a class="btn" href="#comparison">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      Watch the comparison
+    </a>
+  </div>
+
+  <figure class="anim media hero-media panel reveal" id="hero-media">
+    <div class="frame"><video data-autoplay data-sound muted loop playsinline preload="none" width="1440" height="810"
+           poster="assets/video/teaser_poster.webp?v=20261017a"
+           data-webm="assets/video/teaser.webm?v=20261017a" data-src="assets/video/teaser.mp4?v=20261017a"
+           data-webm-mobile="assets/video/teaser_720.webm?v=20261017a" data-src-mobile="assets/video/teaser_720.mp4?v=20261017a"
+           data-poster-mobile="assets/video/teaser_720_poster.webp?v=20261017a" data-size-mobile="720x406"
+           data-static="assets/fig/fig01_teaser.webp?v=20261010" data-static-size="1600x900"
+           data-static-alt="Teaser figure: left, a person teleoperating the simulated robot live with two leader arms in front of a monitor showing three predicted camera views; bottom left, frames from the first two minutes of a multi-minute autoregressive rollout; right, a grid of generated frames showing diverse objects and scenes."
+           aria-label="Teaser video: the title Generalizable World Simulator; live teleoperation of the simulated robot (card Real-Time Teleoperation); a generated two-minute auto-regressive rollout of three camera views, speeding up from 1x to 30x and back with a progress bar (card Minutes of Auto-Regressive Rollout); a scrolling wall of hundreds of generated rollouts that zooms into six captioned examples in turn (card Diverse Objects). Plays silently and loops; click to pause."></video>
+      <button class="snd" type="button" aria-label="Unmute the teaser soundtrack" aria-pressed="false" title="Sound"><svg class="ic-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3 2.8-2.8-1.4-1.4-2.8 2.8-2.8-2.8-1.4 1.4 2.8 2.8-2.8 2.8 1.4 1.4 2.8-2.8 2.8 2.8 1.4-1.4-2.8-2.8z"/></svg><svg class="ic-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/></svg><span class="snd-hint" aria-hidden="true">sound</span></button></div>
+    <div class="stats" role="group" aria-label="Key numbers">
+      <div class="stat"><b>10+ FPS</b><span>real-time interaction</span></div>
+      <div class="stat"><b>5+ minutes</b><span>of autoregressive rollout</span></div>
+      <div class="stat"><b>1000+ tasks</b><span>with diverse objects</span></div>
+    </div>
+  </figure>
+</header>
+
+
+<!-- Live demo: a 16:9 stage in the panel frame (2:1 breakout on wide screens, see style.css). The interactive embed (an iframe on the demo host) is injected by main.js ONLY
+     when the reader clicks "Load the live demo" - never on page load or on scroll: the demo host has a single interactive slot,
+     which the embed claims as soon as it loads, and hand mode asks for the webcam. Unnumbered so 01 / 02 keep their numbers. -->
+<section id="demo" class="wrap">
+  <h2 class="sec-head reveal">Try it live</h2>
+  <p class="intro reveal">Drive the simulator yourself from this page: pick an input, start a scene, and the world model predicts what the robot sees.</p>
+
+  <figure class="media reveal" id="demo-media">
+    <div class="demo-box panel" id="demo-box" data-src="https://192-222-52-117.sslip.io/embed" data-health="https://192-222-52-117.sslip.io/healthz">
+      <img class="demo-shot" src="assets/fig/demo_poster.webp?v=20261015i" srcset="assets/fig/demo_poster_720.webp?v=20261015i 720w, assets/fig/demo_poster.webp?v=20261015i 1440w" sizes="(min-width: 1100px) min(1440px, 94vw), 92vw" width="1440" height="720" alt="" aria-hidden="true" loading="lazy" decoding="async">
+      <div class="demo-poster">
+        <span class="tag tag--media" aria-hidden="true"><span class="dot"></span>live</span>
+        <button class="btn demo-load" type="button" aria-describedby="demo-hint">Load the live demo</button>
+        <p class="demo-hint" id="demo-hint" role="status">Mouse &middot; Keyboard &middot; Hand (webcam) &middot; Leader arms</p>
+        <noscript><p class="demo-hint"><a href="https://192-222-52-117.sslip.io/embed" rel="noreferrer">Open the live demo</a> in a new page (it needs JavaScript to load here).</p></noscript>
+      </div>
+    </div>
+    <figcaption>One visitor drives at a time in 5-minute sessions; while you wait you watch the current player live. Hand mode uses your webcam; frames are processed in memory and never stored.</figcaption>
+  </figure>
+</section>
+
+
+<section id="method" class="wrap">
+  <h2 class="sec-head reveal"><span class="num" aria-hidden="true">01</span>Method</h2>
+  <p class="intro reveal">GWS is a latent flow-matching world model: a tokenizer encodes each camera view into a compact latent, and a causal transformer predicts the next latent from the action, a window of recent latents and a few long-term memory frames. During rollout its own predictions become its history, so one network simulates recorded actions, a policy or a human operator.</p>
+
+  <figure class="anim media reveal" id="method-media">
+    <div class="frame"><video data-autoplay data-phone-static data-once muted playsinline preload="none" width="1920" height="1190"
+           poster="assets/video/method_anim_poster.webp?v=20261010"
+           data-webm="assets/video/method_anim.webm?v=20261010" data-src="assets/video/method_anim.mp4?v=20261010"
+           data-static="assets/fig/fig02_method.webp?v=20261010" data-static-size="1600x980"
+           data-static-alt="Method overview figure: (a) unit-sphere tokenizer, (b) contact-based memory, (c) streaming transformer with the groups: learnable sink, contact memory, dense history and in-flight pyramid."
+           aria-label="Animated method overview. (a) Unit-sphere tokenizer: three camera views pass through an encoder, the latent lands on a unit sphere and a flow decoder reconstructs the views. (b) Contact-based memory: frames stream in, per-arm contact bits flip, keyframes at the transitions fly into a keyframe bank and are retrieved into contact memory. (c) Streaming transformer: a token row of a learnable sink, contact memory, dense history and an in-flight pyramid of noisy frames with action embeddings flows through the transformer, which emits a committed frame, denoised frames and a contact readout. Plays silently, holds on the final frame for six seconds and replays; click to pause."></video></div>
+  </figure>
+
+  <div class="cards">
+    <div class="card panel reveal" style="--i:0">
+      <h3><em>1</em>Unit-sphere tokenizer</h3>
+      <p>Each 256&times;256 view becomes a 16&times;16 grid of 16-dimensional latents projected onto the unit sphere; a flow-matching decoder reconstructs the view. Predicted latents are re-normalized before decoding and before reuse as context, which removes the radial drift that otherwise compounds over long rollouts. Encoder and decoder are fine-tuned jointly from a public image tokenizer, then frozen for dynamics training.</p>
+    </div>
+    <div class="card panel reveal" style="--i:1">
+      <h3><em>2</em>Contact-based memory</h3>
+      <p>The visual history is a 5-s window of recent latents plus eight long-term memory frames. An auxiliary head predicts one contact bit per arm; a predicted contact <i>transition</i> (a grasp or a release) writes that frame into a keyframe bank. Slots hold an anchor frame and keyframes retrieved by end-effector-pose similarity and recency, so a placed object is remembered when the camera looks back at it. At inference the model uses its own contact predictions.</p>
+    </div>
+    <div class="card panel reveal" style="--i:2">
+      <h3><em>3</em>Streaming transformer</h3>
+      <p>A 1.9B-parameter causal transformer (28 blocks, hidden size 2048) applies spatial attention within each frame and causal temporal attention across frames, with a few joint spatio-temporal blocks. A learned <i>sink</i> frame, never noised or evicted, is a persistent attention target. Sixteen in-flight frames at staggered noise levels are denoised in parallel over a rolling KV cache, so compute per step is constant in rollout length and the simulator runs at 10&nbsp;Hz.</p>
+    </div>
+  </div>
+
+</section>
+
+<section id="results" class="wrap">
+  <h2 class="sec-head reveal"><span class="num" aria-hidden="true">02</span>Results</h2>
+
+  <h3 class="sub-head reveal" id="diverse"><span class="num" aria-hidden="true">2.1</span>Interaction with diverse objects</h3>
+  <p class="intro reveal">A single model produces stable AR rollouts across diverse objects, including deformable, compositional, and tool use scenes.</p>
+
+  <!-- 12 held-out rollouts. Desktop: the cells are laid out as a 6x2 grid on a wide stage (up to 1120px, centred) here, then fly
+       to the right-hand rail as the reader scrolls past (scroll-scrubbed FLIP transforms, see main.js); phones/tablets: a plain grid. -->
+  <div class="media stage-fig" id="diverse-media">
+    <div class="stage-outer" id="stage-outer">
+      <div class="stage" id="stage" tabindex="0" role="group"
+           aria-label="Twelve generated 60-second rollouts predicted by GWS on held-out episodes; each cell shows the top camera above the two wrist cameras, with a short caption naming the kind of interaction (articulation, deformables, multi-object, tool use, handover, precision, composition, cloth, particles, paper folding, cable, writing). The clips play silently and loop; press Enter or Space to pause or resume them.">
+        <div class="cells" id="cells">
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_01_poster.webp?v=20261010" data-webm="assets/video/cells/cell_01.webm?v=20261010b" data-src="assets/video/cells/cell_01.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Articulation</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_02_poster.webp?v=20261010" data-webm="assets/video/cells/cell_02.webm?v=20261010b" data-src="assets/video/cells/cell_02.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Deformables</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_03_poster.webp?v=20261010" data-webm="assets/video/cells/cell_03.webm?v=20261010b" data-src="assets/video/cells/cell_03.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Multi-object</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_04_poster.webp?v=20261010" data-webm="assets/video/cells/cell_04.webm?v=20261010b" data-src="assets/video/cells/cell_04.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Tool Use</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_05_poster.webp?v=20261010" data-webm="assets/video/cells/cell_05.webm?v=20261010b" data-src="assets/video/cells/cell_05.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Handover</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_06_poster.webp?v=20261010" data-webm="assets/video/cells/cell_06.webm?v=20261010b" data-src="assets/video/cells/cell_06.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Precision</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_07_poster.webp?v=20261010" data-webm="assets/video/cells/cell_07.webm?v=20261010b" data-src="assets/video/cells/cell_07.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Composition</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_08_poster.webp?v=20261010" data-webm="assets/video/cells/cell_08.webm?v=20261010b" data-src="assets/video/cells/cell_08.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Cloth</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_09_poster.webp?v=20261010" data-webm="assets/video/cells/cell_09.webm?v=20261010b" data-src="assets/video/cells/cell_09.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Particles</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_10_poster.webp?v=20261010" data-webm="assets/video/cells/cell_10.webm?v=20261010b" data-src="assets/video/cells/cell_10.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Paper Folding</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_11_poster.webp?v=20261010" data-webm="assets/video/cells/cell_11.webm?v=20261010b" data-src="assets/video/cells/cell_11.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Cable</span></div>
+          <div class="cell"><div class="vbox"><video muted loop playsinline preload="none" width="256" height="386" poster="assets/video/cells/cell_12_poster.webp?v=20261010" data-webm="assets/video/cells/cell_12.webm?v=20261010b" data-src="assets/video/cells/cell_12.mp4?v=20261010b" aria-hidden="true"></video><span class="tag tag--media gen" aria-hidden="true">generated</span></div><span class="cap" aria-hidden="true">Writing</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub-head reveal" id="comparison"><span class="num" aria-hidden="true">2.2</span>Comparison against baselines</h3>
+  <p class="intro reveal">GWS keeps stable scene layout, arm pose and manipulated objects over minutes, while others drift or even collapse over seconds.</p>
+
+  <!-- one panel: the comparison video (a 60-s rollout re-timed to 15 s = 4x), its playback controls (rollout time; speed 1x | 4x,
+       4x = playbackRate 1 selected by default), and the drift curves drawn as inline SVG from assets/data/drift.json - complete
+       until the video first runs, then revealed up to its rollout time (main.js, "2.2 controls + curves"); data-static is the
+       figure shown instead if the data cannot be fetched -->
+  <div class="video-card combo panel reveal" id="cmp-card">
+    <figure class="anim media">
+      <div class="frame"><video id="cmp-video" data-autoplay data-controls muted loop playsinline preload="none" width="1304" height="434"
+             poster="assets/video/cmp1_cells_poster.webp?v=20261010"
+             data-webm="assets/video/cmp1_cells.webm?v=20261010" data-src="assets/video/cmp1_cells.mp4?v=20261010"
+             data-webm-mobile="assets/video/cmp1_cells_2x3.webm?v=20261010" data-src-mobile="assets/video/cmp1_cells_2x3.mp4?v=20261010"
+             data-poster-mobile="assets/video/cmp1_cells_2x3_poster.webp?v=20261010" data-size-mobile="518x1314"
+             aria-label="60-second rollout comparison played at four times speed, writing on a whiteboard: one generated cell per model (IWS, WEAVER, Cosmos-Predict 2.5, GWS ours) and a ground-truth cell, each showing the top camera above the two wrist cameras, with an elapsed-time stamp. Plays silently and loops; click to pause."></video><span class="cmp-ours" aria-hidden="true"></span><span class="cmp-gen" aria-hidden="true"><span class="tag tag--media gen">generated</span><span class="tag tag--media gen">generated</span><span class="tag tag--media gen">generated</span><span class="tag tag--ours gen">generated &middot; ours</span></span></div>
+    </figure>
+    <div class="controls" id="cmp-controls" role="group" aria-label="Comparison playback">
+      <button class="ctl" type="button" aria-label="Pause">
+        <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
+        <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <span class="time"><span class="t">0:00</span><small> / 1:00</small></span>
+      <input class="scrub" type="range" min="0" max="60" step="0.1" value="0" aria-label="Rollout time in seconds" aria-valuetext="0:00">
+      <span class="seg" role="group" aria-label="Playback speed">
+        <button type="button" data-rate="0.25" aria-pressed="false">1&times;</button><button type="button" data-rate="1" aria-pressed="true">4&times;</button>
+      </span>
+    </div>
+    <figure class="media curves-fig" id="drift-media">
+      <div class="keys" aria-hidden="true"><span style="--c:var(--base-1)">IWS</span><span style="--c:var(--base-2)">WEAVER</span><span style="--c:var(--base-3)">Cosmos-Predict 2.5</span><span class="ours" style="--c:var(--accent)">GWS (ours)</span></div>
+      <div class="tabs seg" role="group" aria-label="Metric">
+        <button type="button" data-metric="psnr" aria-pressed="true">PSNR</button><button type="button" data-metric="lpips" aria-pressed="false">LPIPS</button><button type="button" data-metric="fid" aria-pressed="false">FID</button>
+      </div>
+      <div class="curves" data-sync-to="#cmp-video" data-src="assets/data/drift.json?v=20261011" data-static="assets/fig/fig05_drift.webp?v=20261010" data-static-size="1600x596" data-metric="psnr" role="img"
+           aria-label="Drift curves synchronized with the comparison video above: PSNR, LPIPS and FID in 10-second bins for IWS, WEAVER, Cosmos-Predict 2.5 and GWS (ours). A vertical cursor marks the current rollout time and each curve is revealed up to it as the minute plays back; GWS has the highest PSNR after the first bin and the lowest LPIPS and FID in every bin.">
+        <noscript><img src="assets/fig/fig05_drift.webp?v=20261010" width="1600" height="596" alt="Drift over one minute: PSNR, LPIPS and FID in 10-second bins for IWS, WEAVER, Cosmos-Predict 2.5 and GWS; GWS has the highest PSNR after the first bin and the lowest LPIPS and FID in every bin."></noscript>
+      </div>
+      <p class="axis">time since hand-over (s), 10-s bins &middot; cursor = rollout time of the video above</p>
+    </figure>
+  </div>
+
+  <h3 class="sub-head reveal" id="poleval"><span class="num" aria-hidden="true">2.3</span>Policy evaluation inside the simulator</h3>
+  <p class="intro reveal">GWS provides faithful evaluation for VLA policies.</p>
+
+  <figure class="anim media reveal" id="poleval-media">
+    <div class="frame"><video data-autoplay data-phone-static data-once muted playsinline preload="none" width="1920" height="1080"
+           poster="assets/video/poleval_anim_poster.webp?v=20261011"
+           data-webm="assets/video/poleval_anim.webm?v=20261011" data-src="assets/video/poleval_anim.mp4?v=20261011"
+           data-static="assets/fig/fig06_poleval.webp?v=20261011" data-static-size="1920x1071"
+           data-static-mobile="assets/fig/fig06_poleval_stacked.webp?v=20261011" data-static-size-mobile="997x2201"
+           data-static-alt="Policy-evaluation figure: (a) progress over time for one t-shirt-folding episode on the real robot and inside the simulator, (b) scatter of mean simulator progress versus mean real-robot progress per policy and task."
+           aria-label="Animation of the policy evaluation: (a) task progress over time for one t-shirt-folding episode on the real robot and inside the simulator, drawn as the episode plays; (b) mean progress per policy and task, world model versus real robot, revealed point by point. Plays silently and loops; click to pause."></video></div>
+  </figure>
+
+  <h3 class="sub-head reveal" id="cotrain"><span class="num" aria-hidden="true">2.4</span>Co-training with demonstrations collected inside GWS</h3>
+  <p class="intro reveal">Since GWS runs in real time, the operator can record demonstration episodes inside the simulator without a real robot. Combining real and simulated episodes nearly doubles the policy performance.</p>
+
+  <figure class="anim media narrow reveal" id="cotrain-media">
+    <div class="frame"><video data-autoplay data-phone-static data-once muted playsinline preload="none" width="1920" height="1080"
+           poster="assets/video/cotrain_anim_poster.webp?v=20261011"
+           data-webm="assets/video/cotrain_anim.webm?v=20261011" data-src="assets/video/cotrain_anim.mp4?v=20261011"
+           data-static="assets/fig/fig07_cotrain.webp?v=20261011" data-static-size="1858x996"
+           data-static-alt="Bar chart of real-robot task progress: simulated demonstrations only about 17 percent, real only about 33 percent, real plus simulated about 63 percent."
+           aria-label="Animated bar chart of real-robot task progress for three policies: simulated demonstrations only (17 percent), real only (33 percent), and real plus simulated (63 percent); each bar grows to its value and then receives its error bar. Plays silently and loops; click to pause."></video></div>
+  </figure>
+
+  <h3 class="sub-head reveal" id="ablation"><span class="num" aria-hidden="true">2.5</span>Ablation: what the contact-based memory preserves</h3>
+  <p class="intro reveal">Contact-based memory keeps objects persistent in the scene.</p>
+
+  <figure class="media reveal" id="ablation-media">
+    <img class="zoom" data-lb="wide" src="assets/fig/fig08_memory_ablation.webp?v=20261010" width="1600" height="872" loading="lazy"
+         alt="Four columns, each with a top view, two wrist views and a zoomed inset of the blue bin: without memory the bin is empty; with sparse memory the bin contains the wrong bottles; with contact memory (ours) the bin contains the same two bottles as the real observation in the fourth column.">
+  </figure>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Anonymous authors &mdash; under double-blind review (ICLR 2027).<br>
+  Code and model weights will be released after the review period.</p>
+</footer>
+
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged figure" aria-hidden="true">
+  <button class="lb-close" type="button" aria-label="Close enlarged figure">&times;</button>
+  <figure>
+    <img alt="">
+    <figcaption></figcaption>
+  </figure>
+</div>
+
+<script src="main.js?v=20261017a" defer></script>
+</body>
+</html>
