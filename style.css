@@ -1,0 +1,515 @@
+/* GWS project page v5 - light academic theme, no external dependencies.
+   One visual system: design tokens below (neutral palette + ONE accent, a 6-step type scale, a 4-px spacing rhythm, two radii,
+   one shadow, two easings), one tag/pill component (.tag), one caption style (.cap / figcaption) and one panel frame (.panel) for
+   every framed thing (figures, video cards, stats, method cards).
+   Theme: refined indigo (tokens = tactile-iws docs/site_assets/theme_final/tokens.css, shared with the live demo). Colour rule: the accent
+   is on < 5 % of any screen - primary button, links, GWS series + "ours" tag, progress hairline; live = the --live dot only. */
+:root {
+  /* colour */
+  --ink: #191a20;            /* titles, numbers, primary text, cursor */
+  --ink-2: #414249;          /* body, intros, captions */
+  --ink-3: #676870;          /* meta, section numbers, axis ticks, "soon" */
+  --line: #e4e4e9;
+  --line-2: #d0d0d6;
+  --paper: #ffffff;
+  --paper-2: #f6f6f9;
+  --accent: #504ac5;         /* GWS / ours / primary button / progress hairline ONLY */
+  --accent-ink: #423ea4;     /* accent text, ours-tag text, accent hover */
+  --accent-wash: #f0f0fb;    /* ours tag fill */
+  --on-accent: #ffffff;      /* new: text on accent fills */
+  --live: #c42354;           /* new: the LIVE dot / tag */
+  --base-1: #8e8f99;         /* baseline series in site figures: IWS (neutral) */
+  --base-2: #3a9a88;         /* WEAVER */
+  --base-3: #b08d2c;         /* Cosmos-Predict 2.5 */
+  --link: #423ea4;           /* = accent-ink; no second blue */
+  --focus: #504ac5;          /* 2-px focus ring, 2-px offset */
+  /* type: Inter (opsz) + JetBrains Mono; 16-px body */
+  --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;   /* new */
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;                     /* new */
+  --fs-micro: .6875rem;      /* 11 px  tags, chart ticks */
+  --fs-cap: .8125rem;        /* 13 px  captions, stat labels, legends */
+  --fs-ui: .875rem;          /* 14 px  nav, buttons, controls */
+  --fs-body: 1rem;           /* 16 px */
+  --fs-lead: 1.1875rem;      /* 19 px  section intros */
+  --fs-h3: 1.375rem;         /* 22 px */
+  --fs-h2: 2rem;             /* 32 px */
+  --fs-h1: clamp(2.5rem, 5.4vw, 4.25rem);   /* 40-68 px */
+  --fw-h1: 300; --fw-h2: 400; --fw-h3: 500;  /* new */
+  --ls-h1: -.035em; --ls-h2: -.022em; --ls-h3: -.012em;  /* new */
+  --lh-body: 1.6; --lh-h1: 1.05; --lh-h2: 1.15;          /* new */
+  /* space: 4-px base */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px;
+  /* shape */
+  --r-panel: 16px;           /* every framed thing */
+  --r-media: 10px;           /* media boxes inside panels, cells */
+  --r-pill: 999px;           /* buttons, tags */
+  --shadow-1: 0 1px 2px rgba(25,26,32,.04), 0 12px 32px -20px rgba(25,26,32,.14);
+  /* motion */
+  --t-ui: 180ms; --t-state: 240ms; --t-enter: 600ms;
+  --ease-out: cubic-bezier(.2,0,0,1);       /* entrances, UI state */
+  --ease-io: cubic-bezier(.65,0,.35,1);     /* spatial moves (= the cubic in-out of the 2.1 flight) */
+  --max: clamp(820px, 68vw, 900px);
+  font-size: 16px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  font: 400 var(--fs-body)/var(--lh-body) var(--font);
+  font-optical-sizing: auto;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+/* Skip link */
+.skip { position: absolute; left: -999px; top: 8px; background: var(--paper); padding: var(--s2) var(--s3); border: 1px solid var(--line); border-radius: 6px; z-index: 100; }
+.skip:focus { left: 8px; }
+
+/* ---------- Components ---------- */
+/* Tag: the ONE pill family (eyebrow, "generated" badges, "soon", 2.2 labels). Surfaces: --paper (outlined), --media (white on
+   images, like the teaser's recorded HUD pills), --ours (accent wash = GWS). A leading .dot means live / GWS. */
+.tag { display: inline-flex; align-items: center; gap: 6px; font: 500 var(--fs-micro)/1 var(--font-mono); letter-spacing: .02em; padding: 5px 9px; border-radius: var(--r-pill); white-space: nowrap; }
+.tag--paper { color: var(--ink-3); border: 1px solid var(--line); background: var(--paper); }
+.tag--media { color: var(--ink); background: rgba(255,255,255,.86); box-shadow: 0 0 0 1px rgba(25,26,32,.06); }
+.tag--ours { color: var(--accent-ink); background: var(--accent-wash); }
+.tag .dot, .btn .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live); flex: none; }
+.eyebrow .dot { background: var(--ink-3); } /* eyebrow is neutral; the dot is red only where it means live */
+.btn.primary .dot { background: var(--on-accent); }
+/* Panel: the ONE frame for figures, video cards, the hero media + stats, method cards */
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-panel); box-shadow: var(--shadow-1); overflow: hidden; }
+
+/* Sticky nav with a scroll-progress hairline */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: var(--max); margin: 0 auto; padding: 0 var(--s4);
+  display: flex; align-items: center; gap: var(--s4); height: 54px;
+}
+.nav-brand { font-weight: 600; letter-spacing: -.01em; color: var(--ink); white-space: nowrap; }
+.nav-brand .mark { color: var(--ink); }
+.nav-brand .brand-long { font-weight: 400; color: var(--ink-3); }
+.nav ul { list-style: none; margin: 0 0 0 auto; padding: 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.nav ul::-webkit-scrollbar { display: none; }
+.nav li a {
+  display: inline-block; padding: 6px 12px; border-radius: var(--r-pill);
+  color: var(--ink-3); font-size: var(--fs-ui); font-weight: 500; white-space: nowrap;
+  transition: background var(--t-ui) var(--ease-out), color var(--t-ui) var(--ease-out);
+}
+.nav li a:hover { background: var(--paper-2); color: var(--ink); text-decoration: none; }
+.nav li a.active { background: var(--paper-2); color: var(--ink); text-decoration: none; }
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; }
+.progress span { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; }
+/* Phones: all four section links must fit without scrolling (after the base rules so they win) */
+@media (max-width: 560px) {
+  .brand-long { display: none; }
+  .nav-inner { gap: var(--s2); padding: 0 var(--s3); }
+  .nav ul { gap: 1px; }
+  .nav li a { padding: 5px 8px; font-size: var(--fs-cap); }
+}
+@media (max-width: 360px) {
+  .nav-brand { display: none; }
+  .nav-inner { padding: 0 var(--s2); }
+  .nav ul { margin-left: 0; width: 100%; justify-content: space-between; }
+  .nav li a { padding: 5px 6px; }
+}
+
+/* ---------- Layout + type scale ---------- */
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+main { position: relative; z-index: 2; }
+section { padding: var(--s8) 0 var(--s4); }
+/* .wrap (a class) outranks the type selectors above/below: restate the vertical padding where both apply */
+section.wrap { padding-top: var(--s8); padding-bottom: var(--s4); }
+footer.wrap { padding-top: var(--s6); padding-bottom: var(--s7); }
+h1, h2, h3, h4 { line-height: 1.2; margin: 0 0 var(--s3); font-family: var(--font-display); }
+h2 { font-size: var(--fs-h2); font-weight: var(--fw-h2); letter-spacing: var(--ls-h2); line-height: var(--lh-h2); }
+h3 { font-size: var(--fs-h3); font-weight: var(--fw-h3); letter-spacing: var(--ls-h3); line-height: 1.25; }
+p { margin: var(--s2) 0 var(--s4); }
+.muted { color: var(--ink-3); }
+
+/* Section headers: the number is an inline, neutral, tabular prefix (no accent, no tracking, no underline).
+   Body text is flush left (the hero stays centred): a long centred block reads as a ragged double edge. */
+.sec-head, .sub-head { text-align: left; }
+.sec-head { margin-bottom: var(--s4); }
+.sec-head .num, .sub-head .num { display: inline; color: var(--ink-3); font-weight: 400; margin-right: 10px; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.sub-head { margin-top: var(--s7); margin-bottom: var(--s3); }
+.intro { font-size: 1.0625rem; line-height: 1.6; text-align: left; max-width: 54ch; margin: 0 0 var(--s5); color: var(--ink-2); }
+.intro .lead { color: var(--ink); font-weight: 500; } /* the lead sentence of a long intro */
+.sub-head, .tagline, figcaption, footer p { text-wrap: balance; } /* no orphan words on short lines (Chrome balances <= 6 lines) */
+.intro, .card p { text-wrap: pretty; }
+/* sub/sup never stretch the line box (the pi-0 subscript pushed its line 6 px down in 2.4) */
+sub, sup { font-size: .72em; line-height: 0; position: relative; vertical-align: baseline; }
+sub { bottom: -.22em; } sup { top: -.5em; }
+/* Two-column lede (>= 900 px): heading (20 px) in a 17rem title column (number above it), intro in the right column; below 900 px the
+   pair stacks, flush left */
+@media (min-width: 900px) {
+  .lede { display: grid; grid-template-columns: 17rem 1fr; column-gap: var(--s6); align-items: start; margin-top: var(--s7); margin-bottom: var(--s5); }
+  .lede > .sec-head, .lede > .sub-head { margin: 0; text-wrap: balance; }
+  .lede > .sub-head { font-size: 1.25rem; line-height: 1.3; }
+  .lede > .sec-head .num, .lede > .sub-head .num { display: block; margin: 0 0 var(--s1); font-size: var(--fs-cap); font-family: var(--font-mono); }
+  .lede > .intro { margin: 0; max-width: none; }
+  #results > .sec-head + .lede { margin-top: var(--s5); }
+  section > .lede:first-child { margin-top: 0; }
+}
+@media (max-width: 600px) {
+  section, section.wrap { padding-top: var(--s7); }
+  .sub-head { margin-top: var(--s6); }
+  h2 { font-size: 26px; } h3 { font-size: 19px; }
+  .intro { font-size: var(--fs-body); }
+}
+
+/* ---------- Hero ----------
+   Fold-fit: the media panel (teaser + stat footer) is sized by a pure-CSS min() so the video AND the three stat tiles are on the
+   first screen at any window size - width <= 1120px, <= 92vw, and <= 16:9 of what is left of the viewport height after the nav,
+   the text block, the buttons and the stat row (~416px). Phones: full-bleed panel straight under the title, buttons below it. */
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--s6) 20px var(--s5); }
+.eyebrow { margin: 0 0 var(--s4); }
+.hero h1 { font-size: var(--fs-h1); font-weight: var(--fw-h1); letter-spacing: var(--ls-h1); line-height: var(--lh-h1); margin: 0 0 var(--s3); }
+.tagline { font-size: var(--fs-lead); color: var(--ink-2); font-weight: 400; margin: 0 auto var(--s2); max-width: 44ch; line-height: 1.4; }
+.byline { margin: 0 auto; color: var(--ink-3); font-size: var(--fs-ui); }
+.buttons { display: flex; flex-wrap: wrap; gap: var(--s2); justify-content: center; margin: var(--s5) 0; }
+.hero-media { width: min(1120px, 92vw, calc((100vh - 416px) * 16 / 9)); width: min(1120px, 92vw, calc((100svh - 416px) * 16 / 9)); margin: 0; }
+.hero-media > .frame { border: 0; border-radius: 0; box-shadow: none; } /* the figure itself is the panel */
+.hero-media .stats { margin: 0; border-top: 1px solid var(--line); }
+@media (max-width: 600px) {
+  .hero { padding: var(--s5) 0 var(--s4); }
+  .hero > :not(.hero-media) { margin-left: 16px; margin-right: 16px; }
+  .hero-media { width: 100%; border-radius: 0; border-left: 0; border-right: 0; }
+  .buttons { order: 10; margin: var(--s4) 16px 0; }
+  .btn.primary { order: -1; flex-basis: 100%; justify-content: center; max-width: 320px; margin: 0 auto var(--s1); } /* primary first, full width; Paper + Code share a row */
+}
+/* Buttons: 36-px pills; hover changes colour / border only (no lift) */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--s2); height: 36px;
+  padding: 0 15px; border-radius: var(--r-pill); border: 1px solid var(--line-2);
+  color: var(--ink); background: var(--paper); font-family: var(--font); font-weight: 500; font-size: var(--fs-ui); line-height: 1;
+  transition: background var(--t-ui) var(--ease-out), color var(--t-ui) var(--ease-out), border-color var(--t-ui) var(--ease-out);
+}
+.btn:hover { text-decoration: none; border-color: var(--ink-3); background: var(--paper-2); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.btn.soon { color: var(--ink-3); cursor: not-allowed; }
+.btn.soon:hover { border-color: var(--line-2); background: var(--paper); }
+.btn .tag { padding: 3px 7px; }
+.btn svg { width: 1.05em; height: 1.05em; fill: currentColor; flex: none; }
+
+/* Stats strip: a panel of three tiles (values in ink, not accent) */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); }
+.stat { padding: var(--s3) var(--s2); text-align: center; min-width: 0; }
+.stat + .stat { border-left: 1px solid var(--line); }
+.stat b { display: block; font-size: var(--fs-h3); font-weight: 500; color: var(--ink); letter-spacing: -.015em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stat span { font-size: var(--fs-cap); color: var(--ink-3); line-height: 1.35; display: block; margin-top: var(--s1); }
+@media (max-width: 600px) {
+  .stat { padding: var(--s2) var(--s1); }
+  .stat b { font-size: 17px; }
+  .stat span { font-size: 11.5px; }
+}
+
+/* ---------- Media frames (one panel look for every video and figure) ---------- */
+figure { margin: var(--s5) 0 var(--s6); }
+figure.media > .frame, figure.media > img { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-panel); box-shadow: var(--shadow-1); overflow: hidden; }
+figure.media .frame > video, figure.media .frame > img, figure.media > img, figure.media > picture > img { display: block; width: 100%; height: auto; }
+/* .frame wraps each click-to-pause video; .paused shows a centred play glyph so a frozen frame reads as paused */
+.frame { position: relative; }
+.frame.paused > video { filter: brightness(.72); }
+.frame > video { transition: filter var(--t-state) var(--ease-out); }
+.frame.paused::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px; pointer-events: none;
+  border-radius: 50%; background: rgba(25,26,32,.62) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M8 5v14l11-7z'/%3E%3C/svg%3E") center / 34px no-repeat;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+}
+.frame.paused::before {
+  content: "paused"; position: absolute; left: 50%; top: calc(50% + 46px); transform: translateX(-50%); pointer-events: none;
+  font: 600 var(--fs-micro)/1 var(--font); letter-spacing: .02em; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+figure img.zoom { cursor: zoom-in; }
+/* Caption: the ONE style for text under media (13 px / 500, ink-2, centred) */
+figcaption { font-size: var(--fs-cap); font-weight: 500; color: var(--ink-2); margin: var(--s2) 0 0; line-height: 1.5; text-align: left; max-width: 64ch; }
+figcaption i { color: inherit; }
+figure.narrow { max-width: 680px; margin-left: auto; margin-right: auto; }
+
+/* ---------- Live demo ("Try it live!"): the panel holds a 16:9 black stage. The poster (live tag, one button, one hint line, the note) sits on
+   top; main.js injects the embed iframe under it on click and the poster fades once the frame has loaded (#demo-box.live). States:
+   .loading (button disabled, "Loading..."), .offline (hint reads "The live demo is offline right now.", button offers a retry). ---------- */
+.demo-box { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.demo-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; }
+/* .demo-shot: a still of the demo's landing behind the click-to-load poster (the live UI is light, so the stage is no longer a
+   black box); the poster overlay keeps a dark gradient so the white button and hint stay legible; hidden once the frame is live */
+.demo-box .demo-shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.demo-box.live .demo-shot { display: none; }
+.demo-box .demo-poster { background: rgba(250,250,252,.72); color: var(--ink); } /* flat light scrim over the light landing still */
+.demo-box .demo-hint { background: var(--paper); box-shadow: 0 0 0 1px var(--line); border-radius: var(--r-media); padding: 6px 14px; } /* plate: the hint never collides with the still's own text */
+.demo-box .demo-load { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.demo-box .demo-load:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.demo-poster {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s3); padding: var(--s4); text-align: center; color: #fff; background: #000; cursor: pointer;
+  transition: opacity var(--t-state) var(--ease-out);
+}
+.demo-poster > .tag { position: absolute; left: var(--s3); top: var(--s3); }
+.demo-hint { margin: 0; font-size: var(--fs-cap); font-weight: 500; line-height: 1.5; color: var(--ink-2); max-width: 44ch; text-wrap: balance; }
+.demo-hint a { color: var(--ink); text-decoration: underline; }
+.demo-box.loading .demo-poster { cursor: progress; }
+.demo-box.loading .demo-load { color: var(--ink-3); background: var(--paper); border-color: var(--line-2); cursor: progress; }
+.demo-box.offline .demo-hint { color: var(--ink); }
+.demo-box.live .demo-poster { opacity: 0; pointer-events: none; }
+/* Heading only, centred over the stage (no lede/intro); same gap to the media as a lede's (s5) */
+#demo > .sec-head { text-align: center; margin-bottom: var(--s5); }
+/* .demo-note: the session/webcam note as a small muted plate on the poster's bottom edge (fades with the poster when live, so it
+   never covers the stream); on phones it joins the centred column under the hint (the 16:9 stage is too short for an overlay) */
+.demo-note {
+  position: absolute; left: 50%; bottom: var(--s3); transform: translateX(-50%); width: max-content; max-width: min(92ch, calc(100% - 2 * var(--s4)));
+  margin: 0; padding: 3px 10px; font-size: 12px; font-weight: 400; line-height: 1.45; color: var(--ink-3); text-wrap: balance;
+  background: rgba(250,250,252,.85); border-radius: var(--r-media);
+}
+@media (max-width: 600px) {
+  .demo-poster { gap: var(--s2); padding: var(--s3); } .demo-poster > .tag { left: var(--s2); top: var(--s2); }
+  .demo-poster > * { flex-shrink: 0; }
+  .demo-box .demo-hint { max-width: none; padding: 3px 10px; font-size: 12px; } /* one line, so the note fits under it */
+  .demo-note { position: static; transform: none; width: auto; max-width: none; padding: 2px 6px; font-size: 11px; line-height: 1.35; }
+}
+/* Wide live stage on big screens: the demo figure breaks out of the text column at 2:1, so the embed switches to its wide grid
+   (left wrist | top view | right wrist, instruction strip below). Below 1100 px the 16:9 box in the column stays (the embed keeps its overlay). */
+@media (min-width: 1100px) {
+  #demo-media { width: min(1440px, 94vw); margin-left: calc(50% - min(1440px, 94vw) / 2); }
+  #demo-media .demo-box { aspect-ratio: 2 / 1; }
+}
+
+/* ---------- Method cards (panels; not interactive, so no hover motion) ---------- */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); margin: var(--s6) 0 var(--s1); }
+.card { padding: var(--s4) var(--s4) var(--s4); }
+.card h3 { margin: 0 0 var(--s2); font-size: var(--fs-body); font-weight: 600; letter-spacing: -.01em; display: flex; align-items: center; gap: var(--s2); }
+.card h3 em {
+  font-style: normal; flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-size: var(--fs-cap); font-weight: 500; color: var(--ink-2); background: var(--paper-2); font-variant-numeric: tabular-nums;
+}
+.card p { margin: 0; font-size: var(--fs-body); color: var(--ink-2); line-height: 1.55; }
+@media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
+
+/* ---------- Videos ---------- */
+.video-card { position: relative; margin-top: var(--s5); }
+.video-card figure { margin-top: 0; }
+/* 2.2: the comparison video, its controls bar and the drift curves are ONE panel (hairlines between), so the inner figures
+   drop their own frame; the curves follow the video's time (main.js) */
+.video-card.combo { margin-bottom: var(--s6); }
+.video-card.combo figure { margin: 0; }
+.video-card.combo figure.media > .frame { border: 0; border-radius: 0; box-shadow: none; }
+/* ours outline: the GWS column of the composite, as fractions of the frame like .cmp-gen (desktop 1304x434: x 786/1304, w 256/1304;
+   phone 518x1314: bottom row, left cell, from the row's title at y 880/1314) */
+.cmp-ours { position: absolute; left: 60.276%; width: 19.632%; top: 0; bottom: 0; box-shadow: inset 0 0 0 2px var(--accent); pointer-events: none; }
+@media (max-width: 600px) { .cmp-ours { left: 0; width: 49.421%; top: 66.971%; bottom: 0; } }
+/* controls bar: play/pause, rollout time "0:30 / 1:00", scrubber (0-60 s of rollout), speed 1x | 4x (4x selected by default) */
+.controls { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-top: 1px solid var(--line); background: var(--paper-2); }
+.ctl { width: 32px; height: 32px; flex: none; padding: 0; border-radius: 50%; border: 1px solid var(--line-2); background: var(--paper); color: var(--ink); display: grid; place-items: center; cursor: pointer; transition: border-color var(--t-ui) var(--ease-out); }
+.ctl:hover { border-color: var(--ink-3); background: var(--paper-2); }
+/* .snd: sound toggle for a video that carries a soundtrack (the hero teaser). Autoplay must stay muted, so the visitor
+   opts in with one click; .on = unmuted. Sits bottom-right inside the .frame, above the video. */
+.frame > .snd { position: absolute; right: 12px; bottom: 12px; z-index: 2; height: 32px; padding: 0 10px 0 8px; display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; border: 1px solid var(--line-2); background: color-mix(in srgb, var(--paper) 88%, transparent); color: var(--ink); cursor: pointer;
+  font: inherit; font-size: 12px; letter-spacing: .02em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: border-color var(--t-ui) var(--ease-out), opacity var(--t-ui) var(--ease-out); }
+.frame > .snd:hover, .frame > .snd:focus-visible { border-color: var(--ink-3); }
+.frame > .snd svg { width: 16px; height: 16px; fill: currentColor; }
+.frame > .snd .ic-on, .frame > .snd.on .ic-off { display: none; }
+.frame > .snd.on .ic-on { display: block; }
+.frame > .snd.on .snd-hint { display: none; }
+@media (max-width: 640px) { .frame > .snd { right: 8px; bottom: 8px; height: 30px; } .frame > .snd .snd-hint { display: none; } }
+
+.ctl svg { width: 14px; height: 14px; fill: currentColor; grid-area: 1 / 1; }
+.ctl .ic-play, .ctl.paused .ic-pause { display: none; }
+.ctl.paused .ic-play { display: block; }
+.time { font: 500 var(--fs-ui)/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; min-width: 86px; }
+.time small { color: var(--ink-3); font-weight: 500; font-size: var(--fs-cap); }
+.scrub { flex: 1; min-width: 0; height: 4px; margin: 0; border-radius: 2px; -webkit-appearance: none; appearance: none; cursor: pointer;
+         background: linear-gradient(to right, var(--ink) var(--p, 0%), var(--line-2) var(--p, 0%)); }
+.scrub::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); box-shadow: 0 0 0 1.5px var(--ink), 0 1px 3px rgba(0,0,0,.2); cursor: pointer; }
+.scrub::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--paper); box-shadow: 0 0 0 1.5px var(--ink), 0 1px 3px rgba(0,0,0,.2); }
+.scrub::-moz-range-track { height: 4px; background: transparent; }
+.scrub:focus-visible { outline-offset: 6px; }
+.seg { display: inline-flex; flex: none; border: 1px solid var(--line-2); border-radius: var(--r-pill); overflow: hidden; background: var(--paper); }
+.seg button { font: 500 12px/1 var(--font); padding: 8px 10px; margin: 0; color: var(--ink-3); background: var(--paper); border: 0; cursor: pointer; transition: background var(--t-ui) var(--ease-out), color var(--t-ui) var(--ease-out); }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { color: var(--paper); background: var(--ink); }
+.seg button:focus-visible { outline-offset: -3px; }
+/* drift curves: three inline SVG panels (one per metric) drawn by main.js from assets/data/drift.json; phones show one at a time via the tabs */
+.video-card.combo .curves-fig { border-top: 1px solid var(--line); padding: var(--s4) var(--s4) var(--s3); }
+.keys { display: flex; justify-content: center; gap: var(--s4); flex-wrap: wrap; font-size: var(--fs-cap); font-weight: 500; color: var(--ink-2); margin: 0 0 var(--s2); }
+.keys span::before { content: ""; display: inline-block; width: 14px; height: 3px; border-radius: 2px; background: var(--c); vertical-align: middle; margin-right: 6px; }
+.keys .ours { color: var(--accent-ink); font-weight: 600; }
+.tabs { display: none; margin: 0 auto var(--s3); }
+.curves { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); min-height: 120px; }
+.curves svg { display: block; width: 100%; height: auto; font-family: var(--font); overflow: visible; }
+.curves > img { grid-column: 1 / -1; display: block; width: 100%; height: auto; } /* the static figure main.js shows if drift.json cannot be fetched */
+.curves .tick { font-size: 13px; fill: var(--ink-3); }
+.curves .ttl { font-size: 14px; font-weight: 500; fill: var(--ink); }
+.curves .grid { stroke: var(--line); stroke-width: 1; }
+.curves .axis-line { stroke: var(--line-2); stroke-width: 1; }
+.curves .ghost { opacity: .22; }
+.curves .cursor { stroke: var(--ink); stroke-width: 1.5; }
+.curves .readout { font-size: 14px; font-weight: 500; fill: var(--ink); font-variant-numeric: tabular-nums; display: none; }
+.curves .cpanel:nth-child(2) .readout { display: block; } /* desktop: the readout rides the cursor under the middle panel */
+.curves .mk { transform-box: fill-box; transform-origin: center; transform: scale(0); transition: transform 220ms var(--ease-out); }
+.curves .mk.on { transform: scale(1); }
+.axis { text-align: left; font-size: var(--fs-cap); color: var(--ink-3); margin: var(--s1) 0 0; }
+/* ?debug=1: main.js adds this read-only overlay to the combo card (video clock, readyState, source, frames drawn, first error) */
+.cmp-debug { position: absolute; top: 6px; right: 8px; z-index: 5; max-width: 60%; pointer-events: none; font: 11px/1.35 ui-monospace, Menlo, Consolas, monospace; color: #fff; background: rgba(25,26,32,.78); padding: 4px 7px; border-radius: 4px; word-break: break-all; }
+@media (max-width: 600px) {
+  .controls { gap: var(--s2); padding: var(--s2) var(--s3); }
+  .time { min-width: 40px; } .time small { display: none; }
+  .tabs { display: inline-flex; }
+  .curves { grid-template-columns: 1fr; }
+  .curves .cpanel { display: none; }
+  .curves .cpanel.on { display: block; }
+  .curves .cpanel .readout { display: block; }
+  .video-card.combo .curves-fig { padding: var(--s3) var(--s3) var(--s2); }
+}
+/* Short silent animations: controls-less, autoplay in view, click toggles */
+figure.anim video { cursor: pointer; }
+@media (max-width: 600px) { #diverse-media video { max-width: 420px; margin: 0 auto; } }
+figure.anim video:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* Entrance fades (JS adds .in when the element scrolls into view; without JS everything is visible).
+   Text blocks rise 8 px; media panels only fade. */
+.js .reveal { opacity: 0; transform: translateY(8px); transition: opacity var(--t-enter) var(--ease-out), transform var(--t-enter) var(--ease-out); transition-delay: calc(var(--i, 0) * 60ms); }
+.js .reveal.in { opacity: 1; transform: none; }
+.js figure.reveal, .js .video-card.reveal, .js .stats.reveal { transform: none; }
+
+/* ---------- 2.1 stage: 12 rollout cells ----------
+   Plain responsive grid by default (phones, tablets, no JS). On desktop (>= 1180px) the stage is WIDER than the text column -
+   min(1120px, 92vw), centred - and the grid is 6x2, so all 12 captioned cells fit one 1440x900 screen; main.js adds .flip: the
+   cells become absolutely positioned and are placed by transforms - the 6x2 grid in the stage, then (scroll-scrubbed, while the
+   page keeps scrolling) they fly into a single right-hand rail column and drift there for the rest of the page.
+   Tablets (601-1179px): 4 columns in the text column (cells >= 169px); <= 760px: 3 columns; phones: 3 columns, first 6 cells. */
+.stage-fig { margin: var(--s5) 0 var(--s6); }
+.stage-outer { position: relative; }
+.stage { position: relative; }
+.stage:focus-visible { outline: 2px solid var(--focus); outline-offset: 6px; border-radius: 6px; }
+.cells { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (min-width: 1180px) {
+  /* 50% of the text column minus half the stage: the wide stage stays centred on the column (= the viewport) */
+  .stage-outer { width: min(1120px, 92vw); margin-left: calc(50% - min(1120px, 92vw) / 2); }
+  .cells { grid-template-columns: repeat(6, 1fr); }
+}
+/* A cell is a stacked wrapper: the rounded, clipped video box (.vbox, 256:386, badge inside) and a plain caption row under it.
+   --cap-row is the caption row's on-screen height (incl. the --cap-gap space above the text); main.js reads it and adds it to
+   every cell height (grid pitch, stage height, rail pitch, clone cells) so the text is part of the geometry in all modes. */
+.stage { --cap-row: 22px; --cap-gap: 5px; }
+.cell { position: relative; }
+.vbox { position: relative; aspect-ratio: 256 / 386; border-radius: var(--r-media); overflow: hidden; background: var(--paper-2); }
+.cell video, .cell img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* "generated" badge (.tag--media): top-left of every generated rollout cell (2.1 cells; the four model cells of the 2.2 composite,
+   not the ground truth). On a flip-mode cell main.js sets --inv = 1 / the cell's transform scale, so the badge keeps its
+   on-screen size and inset. */
+.gen {
+  position: absolute; left: calc(6px * var(--inv, 1)); top: calc(6px * var(--inv, 1)); z-index: 2; pointer-events: none;
+  transform: scale(var(--inv, 1)); transform-origin: 0 0;
+}
+@media (max-width: 600px) { .gen { padding: 3px 7px; } }
+/* caption: plain centred text under each 2.1 video box, no background; travels with the cell into the rail. Counter-scaled by
+   --inv about its top centre like .gen, so it keeps its on-screen size (and --cap-row height) when the cell is scaled. */
+.cap {
+  display: block; height: var(--cap-row); padding-top: var(--cap-gap); line-height: calc(var(--cap-row) - var(--cap-gap));
+  transform: scale(var(--inv, 1)); transform-origin: 50% 0; text-align: center; white-space: nowrap;
+  font-size: var(--fs-cap); font-weight: 500; letter-spacing: .01em; color: var(--ink-2);
+}
+@media (max-width: 600px) { .cap { font-size: 11px; } }
+/* 2.2 composite: badge origins as fractions of the frame (256-px cells, image area below a 48-px title row):
+   desktop 1304x434, five cells across; phone 518x1314, rows IWS+WEAVER / Cosmos (centred) / GWS+ground truth */
+.cmp-gen { position: absolute; inset: 0; pointer-events: none; }
+.cmp-gen .gen { left: calc(var(--x) * 100% + 6px); top: calc(var(--y) * 100% + 6px); }
+.cmp-gen .gen:nth-child(1) { --x: 0;      --y: .11060; }
+.cmp-gen .gen:nth-child(2) { --x: .20092; --y: .11060; }
+.cmp-gen .gen:nth-child(3) { --x: .40184; --y: .11060; }
+.cmp-gen .gen:nth-child(4) { --x: .60276; --y: .11060; }
+@media (max-width: 600px) {
+  .cmp-gen .gen:nth-child(1) { --x: 0;      --y: .03653; }
+  .cmp-gen .gen:nth-child(2) { --x: .49421; --y: .03653; }
+  .cmp-gen .gen:nth-child(3) { --x: .25097; --y: .37138; }
+  .cmp-gen .gen:nth-child(4) { --x: 0;      --y: .70624; }
+}
+@media (max-width: 760px) { .cells { grid-template-columns: repeat(3, 1fr); gap: 10px; } }
+@media (max-width: 600px) { .cell:nth-child(n+7) { display: none; } } /* phones: 6 episodes, like the old 2x3 cut */
+/* Desktop flip mode (set by JS at >= 1180px): the stage keeps its grid height, the cells are absolute and placed by transforms */
+.flip .stage { height: var(--stage-h); }
+.flip .cells { position: absolute; left: 0; top: 0; width: 100%; height: calc(var(--rows, 2) * var(--ch) + (var(--rows, 2) - 1) * var(--g)); display: block; z-index: 3; }
+.flip .cells.fixed { position: fixed; inset: 0; width: auto; height: auto; pointer-events: none; }
+.flip .cell { position: absolute; left: 0; top: 0; width: var(--cw); height: calc(var(--cw) * 386 / 256 + var(--cap-row) * var(--inv, 1)); transform-origin: 0 0; will-change: transform; }
+.flip .cells.fixed .cell { pointer-events: auto; }
+.flip .cells.rail {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 86%, transparent 97%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 86%, transparent 97%);
+}
+.flip .stage.paused .cells::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px; pointer-events: none;
+  border-radius: 50%; background: rgba(25,26,32,.62) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M8 5v14l11-7z'/%3E%3C/svg%3E") center / 34px no-repeat;
+  box-shadow: 0 6px 24px rgba(0,0,0,.25);
+}
+/* Reduced motion: the grid stays in the flow; this second, fixed set of posters is the rail (shown by JS once the grid has scrolled past) */
+.rail-clone { display: none; position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 86%, transparent 97%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 11%, #000 86%, transparent 97%); }
+.rail-clone.on { display: block; }
+.rail-clone .cell { position: absolute; left: 0; top: 0; width: var(--rail-w); height: calc(var(--rail-w) * 386 / 256 + var(--cap-row)); transform-origin: 0 0; pointer-events: auto; }
+@media (max-width: 1179.98px) { .rail-toggle { display: none !important; } }
+/* Pause/resume control for the rail (nav, desktop only; un-hidden by JS while the rail is showing) */
+.rail-toggle {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; margin-left: var(--s1);
+  font: 500 var(--fs-cap)/1 var(--font); color: var(--ink-3); background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-pill);
+  padding: 6px 11px 6px 9px; cursor: pointer; white-space: nowrap; transition: background var(--t-ui) var(--ease-out), color var(--t-ui) var(--ease-out), border-color var(--t-ui) var(--ease-out);
+}
+.rail-toggle:hover { color: var(--ink); border-color: var(--line-2); background: var(--paper-2); }
+.rail-toggle[hidden] { display: none; }
+.rail-toggle svg { width: 1em; height: 1em; fill: currentColor; }
+.rail-toggle .ic-play, .rail-toggle[aria-pressed="true"] .ic-pause { display: none; }
+.rail-toggle[aria-pressed="true"] .ic-play { display: block; }
+.rail-toggle[aria-pressed="true"] { color: var(--ink); border-color: var(--line-2); background: var(--paper-2); }
+/* Narrow desktops: icon-only toggle (label stays for assistive tech) so all four section links keep fitting */
+@media (max-width: 1360px) {
+  .rail-toggle { padding: 6px 9px; }
+  .rail-toggle-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+
+/* ---------- Lightbox ---------- */
+.lightbox {
+  position: fixed; inset: 0; z-index: 200; display: none;
+  background: rgba(12,14,18,.96); padding: 54px var(--s4) var(--s5);
+  align-items: flex-start; justify-content: flex-start; flex-direction: column;
+  overflow: auto;
+}
+.lightbox.open { display: flex; }
+/* auto margins centre the figure when it fits and collapse to 0 when it overflows, so the top is always reachable */
+.lightbox figure { margin: auto; }
+.lightbox img { display: block; width: min(96vw, 1600px); max-height: none; height: auto; border-radius: 6px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.lightbox figcaption { color: #d7dbe2; max-width: min(900px, 92vw); margin: var(--s4) auto 0; text-align: center; font-size: var(--fs-ui); font-weight: 400; background: #0c0e12; padding: var(--s2) var(--s4); border-radius: var(--r-media); }
+/* Dense grids on phones: render wide inside a horizontally scrollable lightbox instead of shrinking */
+@media (max-width: 600px) {
+  .lightbox.wide figure { width: 1100px; }
+  .lightbox.wide img { width: 1100px; max-width: none; }
+  .lightbox.wide figcaption { position: sticky; left: 0; max-width: calc(100vw - 2rem); text-align: left; }
+}
+.lb-close {
+  position: fixed; z-index: 1; top: var(--s3); right: var(--s4); width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
+}
+.lb-close:hover { background: rgba(255,255,255,.2); }
+body.lb-lock { overflow: hidden; }
+
+/* ---------- Footer ---------- */
+footer { border-top: 1px solid var(--line); margin-top: var(--s7); padding: var(--s6) 0 var(--s7); color: var(--ink-3); font-size: var(--fs-ui); text-align: center; position: relative; z-index: 2; background: var(--paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .btn, .frame > video, .frame > .snd, .nav li a, .rail-toggle, .curves .mk, .demo-poster { transition: none; }
+}
+@media print { .nav, .buttons, .lightbox, .rail-toggle { display: none !important; } }
